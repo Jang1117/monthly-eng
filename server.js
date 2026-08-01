@@ -5,20 +5,23 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const DATA_FILE = path.join(__dirname, 'data', 'events.json');
 
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-const REDIS_KEY = 'events';
 const useRedis = Boolean(UPSTASH_URL && UPSTASH_TOKEN);
+
+const boards = {
+  main: { redisKey: 'events', dataFile: path.join(__dirname, 'data', 'events.json') },
+  family: { redisKey: 'events_family', dataFile: path.join(__dirname, 'data', 'family-events.json') },
+};
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 
-async function readEventsFromFile() {
+async function readEventsFromFile(dataFile) {
   try {
-    const txt = await fs.readFile(DATA_FILE, 'utf8');
+    const txt = await fs.readFile(dataFile, 'utf8');
     return JSON.parse(txt || '[]');
   } catch (e) {
     if (e.code === 'ENOENT') return [];
@@ -26,13 +29,13 @@ async function readEventsFromFile() {
   }
 }
 
-async function writeEventsToFile(events) {
-  await fs.mkdir(path.join(__dirname, 'data'), { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(events, null, 2), 'utf8');
+async function writeEventsToFile(dataFile, events) {
+  await fs.mkdir(path.dirname(dataFile), { recursive: true });
+  await fs.writeFile(dataFile, JSON.stringify(events, null, 2), 'utf8');
 }
 
-async function readEventsFromRedis() {
-  const res = await fetch(`${UPSTASH_URL}/get/${REDIS_KEY}`, {
+async function readEventsFromRedis(redisKey) {
+  const res = await fetch(`${UPSTASH_URL}/get/${redisKey}`, {
     headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
   });
   if (!res.ok) throw new Error(`Upstash GET failed: ${res.status}`);
@@ -40,8 +43,8 @@ async function readEventsFromRedis() {
   return data.result ? JSON.parse(data.result) : [];
 }
 
-async function writeEventsToRedis(events) {
-  const res = await fetch(`${UPSTASH_URL}/set/${REDIS_KEY}`, {
+async function writeEventsToRedis(redisKey, events) {
+  const res = await fetch(`${UPSTASH_URL}/set/${redisKey}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
     body: JSON.stringify(events),
@@ -49,42 +52,56 @@ async function writeEventsToRedis(events) {
   if (!res.ok) throw new Error(`Upstash SET failed: ${res.status}`);
 }
 
-const readEvents = useRedis ? readEventsFromRedis : readEventsFromFile;
-const writeEvents = useRedis ? writeEventsToRedis : writeEventsToFile;
+async function readEvents(board) {
+  return useRedis ? readEventsFromRedis(board.redisKey) : readEventsFromFile(board.dataFile);
+}
 
-app.get('/events', async (req, res) => {
-  const events = await readEvents();
-  res.json(events);
-});
+async function writeEvents(board, events) {
+  return useRedis ? writeEventsToRedis(board.redisKey, events) : writeEventsToFile(board.dataFile, events);
+}
 
-app.post('/events', async (req, res) => {
-  const ev = req.body;
-  const events = await readEvents();
-  ev.id = Date.now().toString();
-  events.push(ev);
-  await writeEvents(events);
-  res.json(ev);
-});
+function makeEventsRouter(board) {
+  const router = express.Router();
 
-app.put('/events/:id', async (req, res) => {
-  const id = req.params.id;
-  const update = req.body;
-  let events = await readEvents();
-  events = events.map(ev => (ev.id === id ? { ...ev, ...update, id } : ev));
-  await writeEvents(events);
-  res.json({ ok: true });
-});
+  router.get('/events', async (req, res) => {
+    const events = await readEvents(board);
+    res.json(events);
+  });
 
-app.delete('/events/:id', async (req, res) => {
-  const id = req.params.id;
-  let events = await readEvents();
-  events = events.filter(ev => ev.id !== id);
-  await writeEvents(events);
-  res.json({ ok: true });
-});
+  router.post('/events', async (req, res) => {
+    const ev = req.body;
+    const events = await readEvents(board);
+    ev.id = Date.now().toString();
+    events.push(ev);
+    await writeEvents(board, events);
+    res.json(ev);
+  });
+
+  router.put('/events/:id', async (req, res) => {
+    const id = req.params.id;
+    const update = req.body;
+    let events = await readEvents(board);
+    events = events.map(ev => (ev.id === id ? { ...ev, ...update, id } : ev));
+    await writeEvents(board, events);
+    res.json({ ok: true });
+  });
+
+  router.delete('/events/:id', async (req, res) => {
+    const id = req.params.id;
+    let events = await readEvents(board);
+    events = events.filter(ev => ev.id !== id);
+    await writeEvents(board, events);
+    res.json({ ok: true });
+  });
+
+  return router;
+}
+
+app.use('/', makeEventsRouter(boards.main));
+app.use('/family', makeEventsRouter(boards.family));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  console.log(`Storage backend: ${useRedis ? 'Upstash Redis' : 'local file (data/events.json)'}`);
+  console.log(`Storage backend: ${useRedis ? 'Upstash Redis' : 'local file (data/*.json)'}`);
 });
