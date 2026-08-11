@@ -273,7 +273,7 @@
       external: { label: '외부활동', color: '#0ea5e9' }
     };
 
-    const API_BASE_URL = 'https://monthly.jang1117.workers.dev'; // Cloudflare Worker API
+    const API_BASE_URL = 'https://monthly-eng.jang1117.workers.dev'; // Cloudflare Worker API
 
     const BANNER_TOP = 32; // distance from cell top to the first slot
     const BANNER_STEP = 25; // vertical spacing per slot (shared by banners and timed rows)
@@ -579,7 +579,7 @@
         cell.dataset.date = dateKey;
 
         const dayOfWeek = date.getDay();
-        const isHoliday = events.some(ev => ev.type === 'vacation' && ev.startDate <= dateKey && ev.endDate >= dateKey);
+        const isHoliday = events.some(ev => ev.type === 'vacation' && ev.startDate <= dateKey && ev.endDate >= dateKey && Object.keys(userMeta).every(u => ev.users.includes(u)));
         const number = document.createElement('div');
         number.className = `day-number${(dayOfWeek === 0 || dayOfWeek === 6 || isHoliday) ? ' weekend' : ''}`;
         number.textContent = date.getDate();
