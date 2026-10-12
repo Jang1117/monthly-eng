@@ -15,6 +15,39 @@ const boards = {
   family: { redisKey: 'events_family', dataFile: path.join(__dirname, 'data', 'family-events.json') },
 };
 
+// 사용자 목록 (팀원 관리용). 서버에 있으면 모든 기기에서 공유, 없으면 브라우저 localStorage 폴백.
+const usersFile = path.join(__dirname, 'data', 'users.json');
+const DEFAULT_USERS = [
+  { id: 'yang', name: '양성민', color: '#f87171' },
+  { id: 'jang', name: '장승호', color: '#60a5fa' },
+];
+
+async function readUsers() {
+  try {
+    const txt = await fs.readFile(usersFile, 'utf8');
+    const list = JSON.parse(txt || '[]');
+    return Array.isArray(list) && list.length ? list : DEFAULT_USERS;
+  } catch (e) {
+    if (e.code === 'ENOENT') return DEFAULT_USERS;
+    throw e;
+  }
+}
+
+async function writeUsers(list) {
+  await fs.mkdir(path.dirname(usersFile), { recursive: true });
+  await fs.writeFile(usersFile, JSON.stringify(list, null, 2), 'utf8');
+}
+
+app.get('/users', async (req, res) => {
+  res.json(await readUsers());
+});
+
+app.put('/users', async (req, res) => {
+  const list = Array.isArray(req.body) ? req.body : DEFAULT_USERS;
+  await writeUsers(list);
+  res.json({ ok: true });
+});
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));

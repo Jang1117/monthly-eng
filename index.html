@@ -6,165 +6,422 @@
   <title>ENG팀 월간 일정표</title>
   <style>
     :root {
-      --bg: #eef4ff;
-      --panel: #ffffff;
-      --primary: #4f46e5;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --yang: #f87171;
-      --jang: #60a5fa;
-      --kwon: #34d399;
+      --gblue: #1a73e8;
+      --gblue-dark: #1765cc;
+      --gblue-light: #e8f0fe;
+      --text: #3c4043;
+      --muted: #5f6368;
+      --line: #dadce0;
+      --hover: #f1f3f4;
+      --danger: #d93025;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
-      background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+      font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', Roboto, Arial, sans-serif;
+      background: #fff;
       color: var(--text);
-      padding: 12px;
       height: 100vh;
       overflow: hidden;
     }
+    button { font: inherit; }
 
-    .container {
-      max-width: 1320px;
-      margin: 0 auto;
-      background: rgba(255,255,255,0.95);
-      border-radius: 24px;
-      padding: 14px 20px;
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
-      backdrop-filter: blur(10px);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+    .app { height: 100vh; display: flex; flex-direction: column; }
+
+    /* ---------- App bar (Google Calendar style) ---------- */
+    .appbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-bottom: 1px solid var(--line);
+      flex-shrink: 0; background: #fff; position: relative; z-index: 60;
     }
+    .icon-btn {
+      border: none; background: transparent; border-radius: 50%;
+      width: 40px; height: 40px; font-size: 20px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--muted); flex-shrink: 0;
+    }
+    .icon-btn:hover { background: var(--hover); }
+    .brand { display: flex; align-items: baseline; gap: 8px; user-select: none; white-space: nowrap; }
+    .gcal-logo { font-size: 22px; font-weight: 500; letter-spacing: -0.5px; }
+    .gcal-logo .b { color: #4285F4; } .gcal-logo .r { color: #EA4335; }
+    .gcal-logo .y { color: #FBBC05; } .gcal-logo .g { color: #34A853; }
+    .brand-sub { font-size: 14px; color: var(--muted); }
 
-    /* (styles copied from index.html for parity) */
-    header { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:10px; flex-shrink:0; }
-    h1 { margin:0; font-size:1.5rem; }
-    .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    button { border:none; border-radius:999px; padding:8px 12px; font-size:0.88rem; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; }
-    .primary-btn { background: var(--primary); color:white; box-shadow: 0 8px 18px rgba(79,70,229,0.2); }
-    .secondary-btn { background:#f3f4f6; color:#374151; }
-    .legend { display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0; }
-    .legend-item { display:flex; align-items:center; gap:5px; padding:5px 9px; background:#f8fafc; border:1px solid var(--line); border-radius:999px; font-size:0.85rem; color:#334155; }
-    .legend-dot { width:9px; height:9px; border-radius:50%; }
-    .calendar { position:relative; flex:1; min-height:0; display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); grid-template-rows: min-content repeat(var(--rows, 5), 1fr); gap:8px; overflow-x:hidden; overflow-y:auto; -webkit-user-select:none; user-select:none; }
-    .event-bar { position:absolute; height:22px; border-radius:5px; color:#fff; font-size:0.78rem; font-weight:600; padding:0 8px; display:flex; align-items:center; white-space:nowrap; overflow:hidden; cursor:pointer; box-shadow:none; z-index:5; transition:filter .15s ease, transform .15s ease; }
-    .event-bar:hover { filter:brightness(0.96); }
-    .event-bar-colorlayer { position:absolute; inset:0; display:flex; z-index:0; }
-    .event-bar-color-seg { flex:1; }
-    .event-bar-label { position:relative; z-index:1; min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .event-bar-label .meta { font-weight:400; color: rgba(255,255,255,0.85); }
-    .event-row { position:absolute; display:flex; align-items:center; height:22px; font-size:0.78rem; color:#fff; font-weight:600; cursor:pointer; padding:0 8px; border-radius:5px; overflow:hidden; z-index:5; transition:filter .15s ease; }
-    .event-row:hover { filter:brightness(0.96); }
-    .event-row-colorlayer { position:absolute; inset:0; display:flex; z-index:0; }
-    .event-row-color-seg { flex:1; }
-    .event-row-text { position:relative; z-index:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .event-row-text .time { font-variant-numeric:tabular-nums; color:rgba(255,255,255,0.85); }
-    .day-name { text-align:center; padding:4px 4px 10px; background:transparent; border:none; border-bottom:1px solid var(--line); border-radius:0; font-weight:600; font-size:0.76rem; letter-spacing:0.06em; text-transform:uppercase; color:#8b93a7; }
-    .day-name.weekend { color: #e2495c; }
-    .day-cell { min-height:0; overflow:hidden; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:7px 7px 9px; display:flex; flex-direction:column; gap:2px; position:relative; }
-    .day-cell.range-selected { box-shadow: inset 0 0 0 3px rgba(79,70,229,0.12); background: linear-gradient(90deg, rgba(99,102,241,0.04), rgba(99,102,241,0.02)); }
-    .day-cell.drag-active { outline: 2px dashed rgba(79,70,229,0.15); }
-    .day-cell.outside { opacity:0.55; background:#f8fafc; }
-    .day-cell.today { border-color: rgba(79,70,229,0.35); background: linear-gradient(180deg, rgba(79,70,229,0.06), rgba(79,70,229,0) 45%); }
-    .day-number { position:relative; z-index:6; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.82rem; color:#4b5468; border-radius:50%; flex-shrink:0; }
-    .day-number.weekend { color: #e2495c; }
-    .day-cell.today .day-number { background: var(--primary); color:#fff; }
-    .modal { position:fixed; inset:0; background:rgba(15,23,42,0.45); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000; overflow:auto; }
-    .modal.active { display:flex; }
-    .modal-card { width:min(520px,100%); background:white; border-radius:18px; padding:24px; box-shadow:0 20px 55px rgba(15,23,42,0.24); }
-    .user-picker { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0 16px; }
-    .user-btn { padding:10px 8px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; color:#334155; font-weight:700; }
-    .user-btn.yang.active { background: rgba(248,113,113,0.12); border-color: var(--yang); color: var(--yang); }
-    .user-btn.jang.active { background: rgba(96,165,250,0.12); border-color: var(--jang); color: var(--jang); }
-    .user-btn.kwon.active { background: rgba(52,211,153,0.12); border-color: var(--kwon); color: var(--kwon); }
-    .type-picker { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:6px; }
-    .type-btn { padding:10px 8px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; color:#334155; font-weight:700; cursor:pointer; }
-    .type-btn.active { color: white; }
+    .search-box {
+      position: relative; flex: 1 1 auto; max-width: 560px; margin: 0 8px;
+      display: flex; align-items: center;
+      background: var(--hover); border-radius: 8px; height: 44px; padding: 0 8px;
+    }
+    .search-box:focus-within { background: #fff; box-shadow: 0 1px 6px rgba(32,33,36,.28); }
+    .search-box .search-icon { color: var(--muted); font-size: 18px; padding: 0 8px; }
+    #searchInput { border: none; background: transparent; outline: none; flex: 1; font-size: 15px; color: var(--text); height: 100%; min-width: 0; }
+    #searchInput::placeholder { color: var(--muted); }
+    .search-results {
+      position: absolute; top: 50px; left: 0; right: 0;
+      background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(32,33,36,.28);
+      max-height: 340px; overflow-y: auto; z-index: 1200; padding: 6px 0;
+    }
+    .search-results.hidden { display: none; }
+    .search-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+      cursor: pointer; font-size: 14px;
+    }
+    .search-item:hover { background: var(--hover); }
+    .search-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .search-item .s-date { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+    .search-item .s-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .search-empty { padding: 14px 16px; color: var(--muted); font-size: 14px; }
+
+    .nav-group { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+    .btn-outline {
+      border: 1px solid var(--line); background: #fff; border-radius: 4px;
+      padding: 8px 14px; font-size: 14px; cursor: pointer; color: var(--text);
+    }
+    .btn-outline:hover { background: #f8f9fa; box-shadow: 0 1px 2px rgba(60,64,67,.3); }
+    .month-title { font-size: 20px; font-weight: 400; margin: 0 10px; min-width: 130px; }
+    .appbar-spacer { flex: 1 1 auto; }
+
+    /* ---------- Body / sidebar ---------- */
+    .body { flex: 1; display: flex; min-height: 0; }
+    .sidebar {
+      width: 264px; flex-shrink: 0; padding: 12px 14px; overflow-y: auto;
+      border-right: 1px solid var(--line); background: #fff;
+    }
+    body.sidebar-collapsed .sidebar { display: none; }
+    .create-btn {
+      display: flex; align-items: center; gap: 10px;
+      background: #fff; border: none; border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(60,64,67,.35); padding: 12px 20px 12px 14px;
+      font-size: 14.5px; cursor: pointer; color: var(--text); margin-bottom: 18px;
+    }
+    .create-btn:hover { box-shadow: 0 4px 10px rgba(60,64,67,.35); background: #f8f9fa; }
+    .create-btn .plus { font-size: 22px; line-height: 1;
+      background: linear-gradient(135deg,#4285F4,#EA4335,#FBBC05,#34A853);
+      -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+
+    .mini-cal { margin-bottom: 20px; }
+    .mini-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding: 0 4px; }
+    .mini-head span:first-child { font-size: 14px; font-weight: 500; }
+    .mini-head .icon-btn { width: 28px; height: 28px; font-size: 16px; }
+    .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+    .mini-dow { text-align: center; font-size: 10.5px; color: var(--muted); padding: 4px 0; }
+    .mini-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 11.5px; border-radius: 50%; cursor: pointer; color: var(--text);
+    }
+    .mini-day:hover { background: var(--hover); }
+    .mini-day.outside { color: #bdc1c6; }
+    .mini-day.today { background: var(--gblue); color: #fff; font-weight: 700; }
+    .mini-day.today:hover { background: var(--gblue-dark); }
+
+    .side-section { margin-bottom: 20px; }
+    .side-title {
+      font-size: 14px; font-weight: 500; color: var(--text);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 4px; margin-bottom: 2px;
+    }
+    .side-title button {
+      border: none; background: none; color: var(--gblue); font-size: 12.5px;
+      cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    }
+    .side-title button:hover { background: var(--gblue-light); }
+    .user-list { list-style: none; margin: 0; padding: 0; }
+    .user-list li label {
+      display: flex; align-items: center; gap: 10px; padding: 7px 8px;
+      border-radius: 4px; cursor: pointer; font-size: 14px;
+    }
+    .user-list li label:hover { background: var(--hover); }
+    .user-list input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--gblue); cursor: pointer; }
+    .user-list .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .user-list .ev-count { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+    .type-legend { list-style: none; margin: 0; padding: 0; }
+    .type-legend li { display: flex; align-items: center; gap: 10px; padding: 5px 8px; font-size: 13.5px; color: var(--muted); }
+    .type-legend .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+    /* ---------- Month grid ---------- */
+    .cal-wrap { flex: 1; min-width: 0; padding: 12px 16px 16px 8px; display: flex; }
+    .calendar {
+      position: relative; flex: 1; min-height: 0;
+      display: grid; grid-template-columns: repeat(7, minmax(0,1fr));
+      grid-template-rows: min-content repeat(var(--rows, 5), 1fr);
+      border: 1px solid var(--line); border-radius: 8px;
+      overflow-x: hidden; overflow-y: auto;
+      -webkit-user-select: none; user-select: none; background: #fff;
+    }
+    .day-name {
+      text-align: center; padding: 8px 4px; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--line);
+      background: #fff; position: sticky; top: 0; z-index: 8;
+    }
+    .day-name.weekend { color: #d93025; }
+    .day-cell {
+      min-height: 0; overflow: hidden; background: #fff;
+      border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      padding: 4px 4px 6px; display: flex; flex-direction: column; gap: 2px; position: relative;
+    }
+    .day-cell:nth-child(7n) { border-right: none; }
+    .day-cell.range-selected { background: var(--gblue-light); }
+    .day-cell.drag-active { outline: 2px dashed rgba(26,115,232,.35); outline-offset: -2px; }
+    .day-number {
+      position: relative; z-index: 6; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12.5px; color: var(--text); border-radius: 50%; flex-shrink: 0; margin: 0 auto;
+    }
+    .day-cell.outside .day-number { color: #bdc1c6; }
+    .day-number.weekend { color: #d93025; }
+    .day-cell.outside .day-number.weekend { color: #e8a09a; }
+    .day-cell.today .day-number { background: var(--gblue); color: #fff; font-weight: 700; }
+    .day-cell.today .day-number:hover { background: var(--gblue-dark); }
+
+    /* banner (multi-day / all-day) events: solid Google-style pills */
+    .event-bar {
+      position: absolute; height: 22px; border-radius: 4px; color: #fff;
+      font-size: 12.5px; font-weight: 500; padding: 0 8px;
+      display: flex; align-items: center; white-space: nowrap; overflow: hidden;
+      cursor: pointer; z-index: 5; transition: filter .15s ease, box-shadow .15s ease;
+    }
+    .event-bar:hover { filter: brightness(1.08); box-shadow: 0 1px 4px rgba(32,33,36,.35); }
+    .event-bar-colorlayer { position: absolute; inset: 0; display: flex; z-index: 0; }
+    .event-bar-color-seg { flex: 1; }
+    .event-bar-label { position: relative; z-index: 1; min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .event-bar-label .meta { font-weight: 400; color: rgba(255,255,255,0.85); }
+
+    /* timed (single-day) events: Google style — colored dot + dark text */
+    .event-row {
+      position: absolute; display: flex; align-items: center; gap: 6px;
+      height: 22px; font-size: 12.5px; color: var(--text);
+      cursor: pointer; padding: 0 8px 0 6px; border-radius: 4px;
+      overflow: hidden; z-index: 5; background: transparent;
+    }
+    .event-row:hover { background: var(--hover); }
+    .event-row::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--ec, var(--gblue)); flex-shrink: 0;
+    }
+    .event-row-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .event-row-text .time { font-variant-numeric: tabular-nums; color: var(--muted); margin-right: 4px; }
+
+    .event-bar.dragging, .event-row.dragging { opacity: 0.85; box-shadow: 0 8px 24px rgba(32,33,36,.35); z-index: 20; }
+
+    @keyframes eventFlash {
+      0%, 100% { box-shadow: none; }
+      25%, 75% { box-shadow: 0 0 0 3px rgba(26,115,232,.55); }
+    }
+    .flash { animation: eventFlash 0.9s ease-in-out 2; border-radius: 4px; }
+
+    /* ---------- Detail popup (Google event bubble) ---------- */
+    .detail-popup {
+      position: fixed; width: 330px; max-width: calc(100vw - 24px);
+      background: #fff; border-radius: 8px; box-shadow: 0 8px 28px rgba(32,33,36,.35);
+      z-index: 900; overflow: hidden;
+    }
+    .detail-popup.hidden { display: none; }
+    .detail-head { display: flex; align-items: flex-start; gap: 12px; padding: 16px 12px 8px 16px; }
+    .detail-colorbar { width: 4px; align-self: stretch; border-radius: 2px; background: var(--gblue); flex-shrink: 0; min-height: 40px; }
+    .detail-title { font-size: 17px; font-weight: 500; line-height: 1.35; word-break: keep-all; }
+    .detail-when { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .detail-close { margin-left: auto; }
+    .detail-body { padding: 4px 16px 8px 32px; font-size: 13.5px; }
+    .detail-users { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .detail-user { display: inline-flex; align-items: center; gap: 5px; background: #f1f3f4; border-radius: 12px; padding: 3px 10px 3px 6px; font-size: 12.5px; }
+    .detail-user .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .detail-memo { color: var(--text); white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+    .detail-type { display: inline-block; font-size: 12px; font-weight: 500; color: #fff; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; }
+    .detail-actions { display: flex; justify-content: flex-end; gap: 4px; padding: 4px 12px 12px; }
+    .detail-actions button {
+      border: none; background: none; color: var(--muted); font-size: 13.5px;
+      padding: 8px 10px; border-radius: 4px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .detail-actions button:hover { background: var(--hover); }
+    .detail-actions .del:hover { color: var(--danger); background: #fce8e6; }
+
+    /* ---------- Modals ---------- */
+    .modal { position: fixed; inset: 0; background: rgba(32,33,36,.45); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; overflow: auto; }
+    .modal.active { display: flex; }
+    .modal-card { width: min(520px, 100%); background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 12px 40px rgba(32,33,36,.3); }
+    .modal-card h3 { margin: 0 0 14px; font-size: 18px; font-weight: 500; }
+    .user-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 16px; }
+    .user-btn {
+      padding: 10px 8px; border: 1px solid var(--line); border-radius: 8px;
+      background: #fff; color: var(--text); font-weight: 500; cursor: pointer;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-btn:hover { background: #f8f9fa; }
+    .user-btn.active {
+      border-color: var(--uc, var(--gblue)); color: var(--uc, var(--gblue));
+      background: var(--gblue-light); font-weight: 700;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group > label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .type-picker { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 6px; }
+    .type-btn { padding: 10px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); font-weight: 500; cursor: pointer; }
+    .type-btn:hover { background: #f8f9fa; }
+    .type-btn.active { color: #fff; }
     .type-btn.business.active { background: #ef4444; border-color: #ef4444; }
     .type-btn.vacation.active { background: #f59e0b; border-color: #f59e0b; }
     .type-btn.external.active { background: #0ea5e9; border-color: #0ea5e9; }
-    .type-btn.general.active { background: var(--primary); border-color: var(--primary); }
-    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .form-row.time-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,auto); align-items:flex-start; }
-    .spacer-label { visibility:hidden; display:block; }
-    .checkbox-group .allday-toggle { display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:6px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; white-space:nowrap; box-sizing:border-box; cursor:pointer; }
-    input, textarea, select { width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font:inherit; color:var(--text); }
-    textarea { min-height:72px; }
-    .time-select-group { display:flex; gap:6px; }
-    .time-select-group select { padding:10px 4px; text-align:center; }
-    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
-    .danger-btn { background:#fee2e2; color:#b91c1c; }
-
-    .event-bar.dragging, .event-row.dragging { opacity:0.9; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(15,23,42,0.28); }
-    .help-list { margin:12px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:10px; color:#374151; font-size:0.92rem; line-height:1.5; }
-
-    @media (max-width: 780px) {
-      body { padding: 8px; }
-      .container { padding: 10px 14px; border-radius: 18px; }
-      header { flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 8px; }
-      h1 { font-size: 1.25rem; text-align: center; }
-      .legend { justify-content: center; }
-      .controls { justify-content: center; flex-wrap: nowrap; gap: 6px; overflow-x: auto; }
-      .controls button { padding: 7px 9px; font-size: 0.82rem; }
-      .btn-label { display: none; }
-      .calendar {
-        overflow-x: hidden;
-        overflow-y: auto;
-        gap: 6px;
-        grid-template-rows: min-content repeat(var(--rows, 5), minmax(88px, auto));
-      }
-      .day-name { font-size: 0.68rem; padding: 4px 2px 8px; }
-      .day-cell { padding: 5px; gap: 2px; }
-      .day-number { width: 21px; height: 21px; font-size: 0.78rem; }
-      .event-bar { font-size: 0.72rem; }
-      .event-row { font-size: 0.72rem; }
-      .modal-card { width: min(92vw, 480px); padding: 16px; }
-      #addEventBtn { display: none; }
-      .time-select-group select { font-size: 0.8rem; padding: 8px 2px; }
-      .time-select-group select[id$="Period"] { flex: 1.5; }
+    .type-btn.general.active { background: var(--gblue); border-color: var(--gblue); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-row.time-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,auto); align-items: flex-start; }
+    .spacer-label { visibility: hidden; display: block; }
+    .allday-toggle {
+      display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px;
+      border: 1px solid var(--line); border-radius: 8px; background: #fff;
+      white-space: nowrap; cursor: pointer; font-size: 14px;
     }
+    .allday-toggle input { accent-color: var(--gblue); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 6px;
+      padding: 10px 12px; font: inherit; color: var(--text); background: #fff;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gblue); box-shadow: 0 0 0 1px var(--gblue); }
+    textarea { min-height: 72px; resize: vertical; }
+    .time-select-group { display: flex; gap: 6px; }
+    .time-select-group select { padding: 10px 4px; text-align: center; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .btn-primary {
+      background: var(--gblue); color: #fff; border: none; border-radius: 4px;
+      padding: 10px 22px; font-size: 14px; cursor: pointer;
+    }
+    .btn-primary:hover { background: var(--gblue-dark); box-shadow: 0 1px 3px rgba(60,64,67,.4); }
+    .btn-primary:disabled { background: #bdc1c6; cursor: default; box-shadow: none; }
+    .btn-secondary {
+      background: #fff; color: var(--gblue); border: 1px solid var(--line);
+      border-radius: 4px; padding: 10px 16px; font-size: 14px; cursor: pointer;
+    }
+    .btn-secondary:hover { background: #f8f9fa; }
+    .btn-danger { background: #fce8e6; color: var(--danger); border: none; border-radius: 4px; padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .btn-danger:hover { background: #fad2cf; }
 
-    @media (max-width: 420px) {
-      h1 { font-size: 1.2rem; }
-      .legend-item { font-size: 0.8rem; padding: 5px 8px; }
-      button { padding: 8px 12px; font-size: 0.88rem; }
-      .day-name { font-size: 0.64rem; }
-      .day-number { width: 19px; height: 19px; font-size: 0.72rem; }
-      .event-bar { font-size: 0.66rem; }
-      .event-row { font-size: 0.66rem; }
+    /* user management */
+    .manage-list { list-style: none; margin: 0 0 16px; padding: 0; max-height: 260px; overflow-y: auto; }
+    .manage-list li {
+      display: flex; align-items: center; gap: 10px; padding: 9px 6px;
+      border-bottom: 1px solid #f1f3f4; font-size: 14.5px;
+    }
+    .manage-list .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .manage-list .ev-count { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+    .manage-list .icon-btn { width: 32px; height: 32px; font-size: 15px; }
+    .manage-list .icon-btn:hover { color: var(--danger); background: #fce8e6; }
+    .add-user-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .add-user-row input { flex: 1; }
+    .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 4px; }
+    .swatch {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent;
+      cursor: pointer; padding: 0;
+    }
+    .swatch.selected { border-color: var(--text); box-shadow: 0 0 0 2px #fff inset; }
+
+    .help-list { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; color: var(--text); font-size: 14px; line-height: 1.55; }
+
+    .mobile-only { display: none; }
+
+    @media (max-width: 900px) {
+      .search-box { max-width: none; }
+      .brand-sub { display: none; }
+      .month-title { font-size: 17px; min-width: 0; margin: 0 6px; }
+    }
+    @media (max-width: 780px) {
+      .appbar { flex-wrap: wrap; padding: 8px 10px; gap: 6px; }
+      .search-box { order: 5; flex-basis: 100%; margin: 0; }
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 1100;
+        transform: translateX(-105%); transition: transform .22s ease;
+        box-shadow: 4px 0 18px rgba(32,33,36,.25); width: 280px;
+      }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-collapsed .sidebar { display: block; }
+      .sidebar-backdrop {
+        position: fixed; inset: 0; background: rgba(32,33,36,.4);
+        z-index: 1050; display: none;
+      }
+      body.sidebar-open .sidebar-backdrop { display: block; }
+      .cal-wrap { padding: 8px; }
+      .mobile-only { display: inline-flex; }
+      .desktop-only { display: none; }
+      .modal-card { width: min(94vw, 480px); padding: 18px; }
+      .event-bar { font-size: 11.5px; }
+      .event-row { font-size: 11.5px; }
+      .day-number { width: 22px; height: 22px; font-size: 11.5px; }
+      .time-select-group select { font-size: 13px; padding: 8px 2px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <h1>📅 ENG팀 월간 일정표</h1>
+  <div class="app">
+    <header class="appbar">
+      <button class="icon-btn" onclick="toggleSidebar()" title="메뉴">☰</button>
+      <div class="brand">
+        <span class="gcal-logo"><span class="b">C</span><span class="r">a</span><span class="y">l</span><span class="b">e</span><span class="g">n</span><span class="r">d</span><span class="b">a</span><span class="y">r</span></span>
+        <span class="brand-sub">ENG팀 일정표</span>
       </div>
-      <div class="legend">
-        <div class="legend-item"><span class="legend-dot" style="background: var(--yang);"></span>양성민</div>
-        <div class="legend-item"><span class="legend-dot" style="background: var(--jang);"></span>장승호</div>
-        <div class="legend-item"><span class="legend-dot" style="background: var(--kwon);"></span>권두훈</div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="searchInput" placeholder="일정 검색" autocomplete="off" />
+        <div id="searchResults" class="search-results hidden"></div>
       </div>
-      <div class="controls">
-        <div class="month-nav">
-          <button class="secondary-btn" onclick="prevMonth()">◀</button>
-          <span id="monthLabel">2026년 7월</span>
-          <button class="secondary-btn" onclick="nextMonth()">▶</button>
-        </div>
-        <button class="secondary-btn" onclick="goToday()">오늘</button>
-        <button class="primary-btn" id="addEventBtn" onclick="openModal(formatDateKey(currentDate))">+ 일정 추가</button>
-        <button class="secondary-btn" id="helpBtn" onclick="openHelpModal()">❓<span class="btn-label"> 도움말</span></button>
+      <div class="nav-group">
+        <button class="btn-outline" onclick="goToday()">오늘</button>
+        <button class="icon-btn" onclick="prevMonth()" title="이전 달">‹</button>
+        <button class="icon-btn" onclick="nextMonth()" title="다음 달">›</button>
+        <span id="monthLabel" class="month-title"></span>
       </div>
+      <div class="appbar-spacer"></div>
+      <button class="icon-btn mobile-only" onclick="openModal(formatDateKey(new Date()))" title="일정 추가">＋</button>
+      <button class="icon-btn" onclick="openUserModal()" title="사용자 관리">👥</button>
+      <button class="icon-btn" onclick="openHelpModal()" title="도움말">❓</button>
     </header>
 
-    <div class="calendar" id="calendar"></div>
+    <div class="body">
+      <aside id="sidebar" class="sidebar">
+        <button class="create-btn desktop-only" onclick="openModal(formatDateKey(new Date()))"><span class="plus">＋</span> 만들기</button>
+        <div class="mini-cal">
+          <div class="mini-head">
+            <span id="miniLabel"></span>
+            <span>
+              <button class="icon-btn" onclick="miniNav(-1)" title="이전 달">‹</button>
+              <button class="icon-btn" onclick="miniNav(1)" title="다음 달">›</button>
+            </span>
+          </div>
+          <div id="miniGrid" class="mini-grid"></div>
+        </div>
+        <div class="side-section">
+          <div class="side-title">사용자 <button onclick="openUserModal()">관리</button></div>
+          <ul id="userList" class="user-list"></ul>
+        </div>
+        <div class="side-section">
+          <div class="side-title">일정 종류</div>
+          <ul id="typeLegend" class="type-legend"></ul>
+        </div>
+      </aside>
+      <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+      <main class="cal-wrap">
+        <div class="calendar" id="calendar"></div>
+      </main>
+    </div>
+  </div>
+
+  <div id="detailPopup" class="detail-popup hidden">
+    <div class="detail-head">
+      <span id="detailColorBar" class="detail-colorbar"></span>
+      <div style="min-width:0">
+        <div id="detailTitle" class="detail-title"></div>
+        <div id="detailWhen" class="detail-when"></div>
+      </div>
+      <button class="icon-btn detail-close" onclick="closeDetailPopup()" style="width:32px;height:32px;font-size:16px">✕</button>
+    </div>
+    <div class="detail-body">
+      <div><span id="detailType" class="detail-type"></span></div>
+      <div id="detailUsers" class="detail-users"></div>
+      <div id="detailMemo" class="detail-memo"></div>
+    </div>
+    <div class="detail-actions">
+      <button onclick="editDetailEvent()">✏️ 수정</button>
+      <button class="del" onclick="deleteDetailEvent()">🗑️ 삭제</button>
+    </div>
   </div>
 
   <div class="modal" id="helpModal">
@@ -174,13 +431,35 @@
         <li>날짜 칸을 클릭하거나 드래그해서 여러 날짜를 선택하면 일정 추가 창이 열립니다.</li>
         <li>일정 종류(회의/출장/휴일/외부활동), 참여자, 날짜, 시간, 메모를 입력하고 저장하세요.</li>
         <li>"종일"을 체크하면 시간 없이 하루 종일 일정으로 등록됩니다.</li>
-        <li>만들어진 일정 막대를 클릭하면 수정, 드래그하면 날짜 이동, Ctrl을 누른 채 드래그하면 복제됩니다.</li>
+        <li>일정을 클릭하면 상세 보기가 열립니다. ✏️ 수정, 🗑️ 삭제를 할 수 있어요.</li>
+        <li>일정 막대를 드래그하면 날짜 이동, Ctrl을 누른 채 드래그하면 복제됩니다.</li>
         <li>달력 위에서 마우스 휠을 굴리면 이전/다음 달로 이동합니다.</li>
+        <li>상단 검색창에서 메모·종류·이름으로 일정을 검색할 수 있습니다.</li>
+        <li>왼쪽 목록에서 사용자를 체크 해제하면 해당 사용자의 일정이 숨겨집니다.</li>
+        <li>👥 사용자 관리에서 팀원을 추가하거나 삭제할 수 있습니다.</li>
         <li>모바일에서는 손가락으로 날짜 칸을 눌러 드래그하면 여러 날짜를 선택할 수 있습니다.</li>
         <li>일정 수정 창에서 Delete 키로 삭제, Esc 키로 창을 닫을 수 있습니다.</li>
       </ul>
       <div class="modal-actions">
-        <button type="button" class="primary-btn" onclick="closeHelpModal()">확인</button>
+        <button type="button" class="btn-primary" onclick="closeHelpModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="userModal">
+    <div class="modal-card">
+      <h3>사용자 관리</h3>
+      <ul id="manageUserList" class="manage-list"></ul>
+      <div class="form-group">
+        <label>새 사용자 추가</label>
+        <div class="add-user-row">
+          <input id="newUserName" placeholder="이름 입력" maxlength="20" />
+          <button type="button" class="btn-primary" id="addUserBtn" onclick="addUser()">추가</button>
+        </div>
+        <div id="colorSwatches" class="swatches"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeUserModal()">닫기</button>
       </div>
     </div>
   </div>
@@ -188,10 +467,9 @@
   <div class="modal" id="eventModal">
     <div class="modal-card">
       <h3 id="modalTitle">새 일정 추가</h3>
-      <div class="user-picker">
-        <button type="button" class="user-btn yang" data-user="yang">양성민</button>
-        <button type="button" class="user-btn jang" data-user="jang">장승호</button>
-        <button type="button" class="user-btn kwon" data-user="kwon">권두훈</button>
+      <div class="form-group">
+        <label>참여자</label>
+        <div class="user-picker" id="userPicker"></div>
       </div>
 
       <div class="form-group">
@@ -249,19 +527,22 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="secondary-btn" onclick="closeModal()">취소</button>
-        <button type="button" class="danger-btn" id="deleteBtn" onclick="deleteCurrentEvent()">삭제</button>
-        <button type="button" class="primary-btn" onclick="saveEvent()">저장</button>
+        <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
+        <button type="button" class="btn-danger" id="deleteBtn" onclick="deleteCurrentEvent()">삭제</button>
+        <button type="button" class="btn-primary" onclick="saveEvent()">저장</button>
       </div>
     </div>
   </div>
 
   <script>
-    const userMeta = {
-      yang: { name: '양성민', color: '#f87171' },
-      jang: { name: '장승호', color: '#60a5fa' },
-      kwon: { name: '권두훈', color: '#34d399' }
-    };
+    /* ================= Users (dynamic roster) ================= */
+    const DEFAULT_USERS = [
+      { id: 'yang', name: '양성민', color: '#f87171' },
+      { id: 'jang', name: '장승호', color: '#60a5fa' }
+    ];
+    // Google Calendar palette for new users
+    const USER_PALETTE = ['#d50000', '#e67c73', '#f4511e', '#f6bf26', '#33b679', '#0b8043',
+      '#039be5', '#3f51b5', '#7986cb', '#8e24aa', '#616161', '#f87171', '#60a5fa', '#34d399'];
 
     const typeMeta = {
       general: { label: '회의', color: '#4f46e5' },
@@ -270,29 +551,88 @@
       external: { label: '외부활동', color: '#0ea5e9' }
     };
 
-    const API_BASE_URL = 'https://monthly-eng.jang1117.workers.dev'; // Cloudflare Worker API
+    const API_BASE_URL = ''; // Worker가 프론트/백엔드를 함께 서빙하므로 같은 출처(origin)를 사용
 
-    const BANNER_TOP = 32; // distance from cell top to the first slot
-    const BANNER_STEP = 25; // vertical spacing per slot (shared by banners and timed rows)
+    const BANNER_TOP = 32;
+    const BANNER_STEP = 25;
 
     let currentDate = new Date();
-    let events = normalizeEvents(JSON.parse(localStorage.getItem('monthlyScheduleEvents') || '[]'));
+    let miniDate = new Date();
+    let userOrder = [];
+    let userMeta = {};
+    let hiddenUsers = new Set();
+    try { hiddenUsers = new Set(JSON.parse(localStorage.getItem('monthlyScheduleHiddenUsers') || '[]')); } catch (e) {}
+    let selectedNewColor = USER_PALETTE[0];
+
+    let events = [];
     let selectedUsers = [];
     let selectedType = 'general';
     let editingEventId = null;
     let dragSelection = null;
     let dragEventState = null;
+    let detailEventId = null;
+    let searchTimer = null;
 
+    function applyUsers(list) {
+      userOrder = [];
+      userMeta = {};
+      (list || []).forEach(u => {
+        if (u && u.id && u.name) {
+          userOrder.push(String(u.id));
+          userMeta[String(u.id)] = { name: String(u.name), color: u.color || '#616161' };
+        }
+      });
+      if (userOrder.length === 0) {
+        userOrder = DEFAULT_USERS.map(u => u.id);
+        userMeta = {};
+        DEFAULT_USERS.forEach(u => { userMeta[u.id] = { name: u.name, color: u.color }; });
+      }
+      hiddenUsers = new Set([...hiddenUsers].filter(id => userMeta[id]));
+      renderUserUI();
+    }
+
+    function getUserList() {
+      return userOrder.map(id => ({ id, name: userMeta[id].name, color: userMeta[id].color }));
+    }
+
+    async function loadUsers() {
+      let list = null;
+      try {
+        const res = await fetch(getApiUrl('/users'));
+        if (res.ok) {
+          const j = await res.json();
+          if (Array.isArray(j) && j.length) list = j;
+        }
+      } catch (e) { /* Worker에 /users 엔드포인트가 없으면 로컬로 폴백 */ }
+      if (!list) {
+        try {
+          const s = JSON.parse(localStorage.getItem('monthlyScheduleUsers') || 'null');
+          if (Array.isArray(s) && s.length) list = s;
+        } catch (e) {}
+      }
+      applyUsers(list || DEFAULT_USERS);
+      events = normalizeEvents(events);
+      renderCalendar();
+    }
+
+    async function saveUsers() {
+      const list = getUserList();
+      try {
+        const res = await fetch(getApiUrl('/users'), {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(list)
+        });
+        if (!res.ok) throw new Error('users API unavailable');
+      } catch (e) { /* /users 미지원 Worker에서는 localStorage만 사용 */ }
+      try { localStorage.setItem('monthlyScheduleUsers', JSON.stringify(list)); } catch (e) {}
+    }
+
+    function saveHiddenUsers() {
+      try { localStorage.setItem('monthlyScheduleHiddenUsers', JSON.stringify([...hiddenUsers])); } catch (e) {}
+    }
+
+    /* ================= Utils ================= */
     function isMobileView() {
       return window.matchMedia('(max-width: 780px)').matches;
-    }
-
-    function openHelpModal() {
-      document.getElementById('helpModal').classList.add('active');
-    }
-
-    function closeHelpModal() {
-      document.getElementById('helpModal').classList.remove('active');
     }
 
     function getApiUrl(path) {
@@ -301,11 +641,17 @@
 
     function normalizeEvents(list) {
       if (!Array.isArray(list)) return [];
-      return list.map((ev, index) => {
+      const out = [];
+      list.forEach((ev, index) => {
         const startDate = ev.startDate || ev.date || formatDateKey(new Date());
-        let users = Array.isArray(ev.users) ? ev.users.filter(u => userMeta[u]) : (ev.user ? [ev.user] : []);
-        if (users.length === 0) users = ['yang'];
-        return {
+        let users = Array.isArray(ev.users) ? ev.users.filter(u => userMeta[u]) : (ev.user && userMeta[ev.user] ? [ev.user] : []);
+        if (users.length === 0) {
+          // 유효한 참여자가 한 명도 없으면(삭제된 사용자만 있던 일정) 표시하지 않음.
+          // 서버 데이터는 그대로 두어 복구 가능하게 함.
+          console.warn('Skipping event with no valid users:', ev.id);
+          return;
+        }
+        const normalized = {
           id: ev.id || ev.id === 0 ? String(ev.id) : (ev.id || `${Date.now()}-${index}`),
           startDate,
           endDate: ev.endDate || ev.date || startDate,
@@ -317,7 +663,9 @@
           type: ev.type || 'business',
           allDay: !!ev.allDay
         };
+        out.push(normalized);
       });
+      return out;
     }
 
     function formatDateKey(date) {
@@ -389,6 +737,19 @@
       hidden.dispatchEvent(new Event('change'));
     }
 
+    function getDefaultTimeRange() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = Math.ceil(now.getMinutes() / 10) * 10;
+      if (minutes === 60) {
+        minutes = 0;
+        hours = (hours + 1) % 24;
+      }
+      const startTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      const endTime = `${String((hours + 1) % 24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      return { startTime, endTime };
+    }
+
     function isDateInRange(date, startDate, endDate) {
       const key = formatDateKey(date);
       return key >= startDate && key <= endDate;
@@ -408,6 +769,17 @@
       return typeMeta[type]?.label || typeMeta.general.label;
     }
 
+    function isEventVisible(ev) {
+      return ev.users.some(u => !hiddenUsers.has(u));
+    }
+
+    function eventDisplayTitle(ev) {
+      return ev.memo || ev.title || getTypeLabel(ev.type);
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    /* ================= Events API ================= */
     async function loadEvents() {
       try {
         const res = await fetch(getApiUrl('/events'));
@@ -416,6 +788,7 @@
         events = normalizeEvents(list);
         localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events));
         renderCalendar();
+        renderSidebarUsers();
       } catch (e) {
         console.warn('Failed to load events from server, falling back to localStorage', e);
         try {
@@ -425,6 +798,7 @@
           events = [];
         }
         renderCalendar();
+        renderSidebarUsers();
       }
     }
 
@@ -434,7 +808,6 @@
         if (!res.ok) throw new Error('API create failed ' + res.status);
         return res.json();
       } catch (e) {
-        // fallback: save to localStorage
         const list = JSON.parse(localStorage.getItem('monthlyScheduleEvents') || '[]');
         const id = Date.now().toString();
         const created = { ...ev, id };
@@ -449,7 +822,6 @@
         const res = await fetch(getApiUrl(`/events/${id}`), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ev) });
         if (!res.ok) throw new Error('API update failed ' + res.status);
       } catch (e) {
-        // fallback: update localStorage
         const list = JSON.parse(localStorage.getItem('monthlyScheduleEvents') || '[]');
         const updated = list.map(item => item.id === id ? { ...item, ...ev, id } : item);
         localStorage.setItem('monthlyScheduleEvents', JSON.stringify(updated));
@@ -461,18 +833,18 @@
         const res = await fetch(getApiUrl(`/events/${id}`), { method: 'DELETE' });
         if (!res.ok) throw new Error('API delete failed ' + res.status);
       } catch (e) {
-        // fallback: delete from localStorage
         const list = JSON.parse(localStorage.getItem('monthlyScheduleEvents') || '[]');
         const updated = list.filter(item => item.id !== id);
         localStorage.setItem('monthlyScheduleEvents', JSON.stringify(updated));
       }
     }
 
+    /* ================= Calendar engine ================= */
     function isBannerEvent(ev) {
       return ev.startDate !== ev.endDate || ev.allDay;
     }
 
-    function assignSlots(dateKeys) {
+    function assignSlots(dateKeys, evList) {
       const rows = Math.ceil(dateKeys.length / 7);
       const rowSlots = Array.from({ length: rows }, () => []);
       const bannerAssignments = [];
@@ -480,7 +852,7 @@
       const visibleStart = dateKeys[0];
       const visibleEnd = dateKeys[dateKeys.length - 1];
 
-      events.filter(isBannerEvent).sort((a, b) => a.startDate.localeCompare(b.startDate) || Number(a.id) - Number(b.id)).forEach(ev => {
+      evList.filter(isBannerEvent).sort((a, b) => a.startDate.localeCompare(b.startDate) || Number(a.id) - Number(b.id)).forEach(ev => {
         const eventStart = ev.startDate;
         const eventEnd = ev.endDate;
         if (eventEnd < visibleStart || eventStart > visibleEnd) return;
@@ -514,7 +886,7 @@
 
       const nextSlot = { ...dateReserve };
       const timedAssignments = [];
-      sortEventsForDisplay(events).filter(ev => !isBannerEvent(ev)).forEach(ev => {
+      sortEventsForDisplay(evList).filter(ev => !isBannerEvent(ev)).forEach(ev => {
         if (ev.startDate < visibleStart || ev.startDate > visibleEnd) return;
         const slotIndex = nextSlot[ev.startDate] || 0;
         nextSlot[ev.startDate] = slotIndex + 1;
@@ -542,12 +914,13 @@
       const daysInMonth = last.getDate();
       const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
       const today = new Date();
+      const vevents = events.filter(isEventVisible);
 
       const dateKeys = [];
       for (let i = 0; i < totalCells; i++) {
         dateKeys.push(formatDateKey(new Date(year, month, i - firstDay + 1)));
       }
-      const { bannerAssignments, timedAssignments, rowMaxSlots } = assignSlots(dateKeys);
+      const { bannerAssignments, timedAssignments, rowMaxSlots } = assignSlots(dateKeys, vevents);
 
       const calendar = document.getElementById('calendar');
       calendar.innerHTML = '';
@@ -575,7 +948,7 @@
         cell.dataset.date = dateKey;
 
         const dayOfWeek = date.getDay();
-        const isHoliday = events.some(ev => ev.type === 'vacation' && ev.startDate <= dateKey && ev.endDate >= dateKey && Object.keys(userMeta).every(u => ev.users.includes(u)));
+        const isHoliday = vevents.some(ev => ev.type === 'vacation' && ev.startDate <= dateKey && ev.endDate >= dateKey && Object.keys(userMeta).every(u => ev.users.includes(u)));
         const number = document.createElement('div');
         number.className = `day-number${(dayOfWeek === 0 || dayOfWeek === 6 || isHoliday) ? ' weekend' : ''}`;
         number.textContent = date.getDate();
@@ -615,11 +988,6 @@
       const numberRect = sampleNumber.getBoundingClientRect();
       const bannerTop = Math.round(numberRect.bottom - cellRect.top) + 4;
 
-      // Size each week's row to fit only that week's busiest day, instead of
-      // one fixed/equal height for every row. Event bars are absolutely
-      // positioned (out of normal flow), so a plain grid "auto" row never
-      // grows to fit them on its own — without this, a busy day's extra
-      // events spill visually into the next week's row.
       const rowHeights = rowMaxSlots.map(m => `minmax(${Math.max(88, bannerTop + m * BANNER_STEP + 14)}px, auto)`);
       calendar.style.gridTemplateRows = `min-content ${rowHeights.join(' ')}`;
 
@@ -652,6 +1020,7 @@
 
         const bar = document.createElement('div');
         bar.className = 'event-bar';
+        bar.dataset.eventId = ev.id;
         bar.style.top = `${top}px`;
         bar.style.left = `${left}px`;
         bar.style.width = `${width}px`;
@@ -687,10 +1056,6 @@
         bar.addEventListener('mousedown', (e) => {
           e.stopPropagation();
           e.preventDefault();
-          // Rows can now be different heights (auto-sized per week), so drag
-          // distance can't be a fixed pixel-per-row division anymore — track
-          // the bar's real starting position and, on move, find whichever
-          // cell is actually under the cursor instead.
           const rect = startCell.getBoundingClientRect();
           dragEventState = {
             active: true, eventId: ev.id, originalStart: ev.startDate, originalEnd: ev.endDate,
@@ -700,10 +1065,9 @@
         });
 
         bar.addEventListener('click', (e) => {
-          if (isMobileView()) return;
           if (dragEventState && dragEventState.active) return;
           e.stopPropagation();
-          openModal(segStart, ev);
+          openDetailPopup(ev, e.clientX, e.clientY);
         });
 
         calendar.appendChild(bar);
@@ -722,29 +1086,19 @@
         const left = cell.offsetLeft + 2;
         const width = cell.offsetWidth - 4;
 
-        const userColors = ev.users.map(u => userMeta[u]?.color).filter(Boolean);
-        const segColors = userColors.length ? userColors : [typeMeta[ev.type]?.color || typeMeta.general.color];
-
         const row = document.createElement('div');
         row.className = 'event-row';
+        row.dataset.eventId = ev.id;
         row.style.top = `${top}px`;
         row.style.left = `${left}px`;
         row.style.width = `${width}px`;
-
-        const colorLayer = document.createElement('span');
-        colorLayer.className = 'event-row-colorlayer';
-        segColors.forEach(c => {
-          const seg = document.createElement('span');
-          seg.className = 'event-row-color-seg';
-          seg.style.background = c;
-          colorLayer.appendChild(seg);
-        });
-        row.appendChild(colorLayer);
+        const firstColor = userMeta[ev.users[0]]?.color || typeMeta[ev.type]?.color || typeMeta.general.color;
+        row.style.setProperty('--ec', firstColor);
 
         const text = document.createElement('span');
         text.className = 'event-row-text';
-        const title = ev.memo || getTypeLabel(ev.type);
-        const timeSpan = isMobileView() ? '' : `<span class="time">${escapeHtml(ev.startTime)}</span> `;
+        const title = eventDisplayTitle(ev);
+        const timeSpan = isMobileView() ? '' : `<span class="time">${escapeHtml(ev.startTime)}</span>`;
         text.innerHTML = `${timeSpan}${escapeHtml(title)}`;
         row.appendChild(text);
 
@@ -760,22 +1114,467 @@
         });
 
         row.addEventListener('click', (e) => {
-          if (isMobileView()) return;
           if (dragEventState && dragEventState.active) return;
           e.stopPropagation();
-          openModal(ev.startDate, ev);
+          openDetailPopup(ev, e.clientX, e.clientY);
         });
 
         calendar.appendChild(row);
       });
     }
 
-    function prevMonth() { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); loadEvents(); }
-    function nextMonth() { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); loadEvents(); }
-    function goToday() { currentDate = new Date(); loadEvents(); }
+    /* ================= Navigation / sidebar ================= */
+    function prevMonth() { closeDetailPopup(); currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); miniDate = new Date(currentDate); renderCalendar(); renderMiniCal(); }
+    function nextMonth() { closeDetailPopup(); currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); miniDate = new Date(currentDate); renderCalendar(); renderMiniCal(); }
+    function goToday() { closeDetailPopup(); currentDate = new Date(); miniDate = new Date(); renderCalendar(); renderMiniCal(); }
+
+    function toggleSidebar(force) {
+      if (isMobileView()) {
+        document.body.classList.toggle('sidebar-open', typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-open'));
+      } else {
+        const collapsed = typeof force === 'boolean' ? !force : !document.body.classList.contains('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        setTimeout(renderCalendar, 60);
+      }
+    }
+
+    function miniNav(delta) {
+      miniDate = new Date(miniDate.getFullYear(), miniDate.getMonth() + delta, 1);
+      renderMiniCal();
+    }
+
+    function renderMiniCal() {
+      const year = miniDate.getFullYear();
+      const month = miniDate.getMonth();
+      document.getElementById('miniLabel').textContent = formatMonthLabel(miniDate);
+      const grid = document.getElementById('miniGrid');
+      grid.innerHTML = '';
+      ['일','월','화','수','목','금','토'].forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'mini-dow';
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+      const first = new Date(year, month, 1);
+      const firstDay = first.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrev = new Date(year, month, 0).getDate();
+      const today = new Date();
+      for (let i = 0; i < 42; i++) {
+        const dayNum = i - firstDay + 1;
+        let d, outside = false;
+        if (dayNum < 1) { d = new Date(year, month - 1, daysInPrev + dayNum); outside = true; }
+        else if (dayNum > daysInMonth) { d = new Date(year, month + 1, dayNum - daysInMonth); outside = true; }
+        else { d = new Date(year, month, dayNum); }
+        const el = document.createElement('div');
+        el.className = `mini-day${outside ? ' outside' : ''}${isSameDate(d, today) ? ' today' : ''}`;
+        el.textContent = d.getDate();
+        el.addEventListener('click', () => {
+          currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
+          miniDate = new Date(currentDate);
+          renderCalendar();
+          renderMiniCal();
+          if (isMobileView()) toggleSidebar(false);
+        });
+        grid.appendChild(el);
+      }
+    }
+
+    /* ================= Sidebar user list / type legend ================= */
+    function renderUserUI() {
+      renderSidebarUsers();
+      renderUserPicker();
+      renderTypeLegend();
+    }
+
+    function renderSidebarUsers() {
+      const ul = document.getElementById('userList');
+      if (!ul) return;
+      ul.innerHTML = '';
+      userOrder.forEach(id => {
+        const meta = userMeta[id];
+        const count = events.filter(ev => ev.users.includes(id)).length;
+        const li = document.createElement('li');
+        const label = document.createElement('label');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !hiddenUsers.has(id);
+        cb.addEventListener('change', () => {
+          if (cb.checked) hiddenUsers.delete(id); else hiddenUsers.add(id);
+          saveHiddenUsers();
+          renderCalendar();
+          renderSidebarUsers();
+        });
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.style.background = meta.color;
+        const name = document.createElement('span');
+        name.textContent = meta.name;
+        const cnt = document.createElement('span');
+        cnt.className = 'ev-count';
+        cnt.textContent = `${count}개`;
+        label.appendChild(cb);
+        label.appendChild(dot);
+        label.appendChild(name);
+        label.appendChild(cnt);
+        li.appendChild(label);
+        ul.appendChild(li);
+      });
+    }
+
+    function renderTypeLegend() {
+      const ul = document.getElementById('typeLegend');
+      if (!ul || ul.children.length) return;
+      Object.values(typeMeta).forEach(t => {
+        const li = document.createElement('li');
+        const sw = document.createElement('span');
+        sw.className = 'swatch';
+        sw.style.background = t.color;
+        li.appendChild(sw);
+        li.appendChild(document.createTextNode(t.label));
+        ul.appendChild(li);
+      });
+    }
+
+    /* ================= Detail popup ================= */
+    function openDetailPopup(ev, x, y) {
+      detailEventId = ev.id;
+      const popup = document.getElementById('detailPopup');
+      const colors = ev.users.map(u => userMeta[u]?.color).filter(Boolean);
+      const mainColor = colors[0] || typeMeta[ev.type]?.color || typeMeta.general.color;
+      document.getElementById('detailColorBar').style.background = mainColor;
+
+      const title = eventDisplayTitle(ev);
+      document.getElementById('detailTitle').textContent = title;
+
+      let when;
+      if (ev.startDate === ev.endDate) {
+        when = formatDateLabel(ev.startDate);
+        if (!ev.allDay) when += ` · ${ev.startTime} - ${ev.endTime}`;
+        else when += ' · 종일';
+      } else {
+        when = `${formatDateLabel(ev.startDate)} - ${formatDateLabel(ev.endDate)}`;
+        if (!ev.allDay) when += ` · ${ev.startTime} - ${ev.endTime}`;
+        else when += ' · 종일';
+      }
+      document.getElementById('detailWhen').textContent = when;
+
+      const typeEl = document.getElementById('detailType');
+      typeEl.textContent = getTypeLabel(ev.type);
+      typeEl.style.background = typeMeta[ev.type]?.color || typeMeta.general.color;
+
+      const usersEl = document.getElementById('detailUsers');
+      usersEl.innerHTML = '';
+      if (ev.users.length >= userOrder.length && userOrder.length > 1) {
+        const chip = document.createElement('span');
+        chip.className = 'detail-user';
+        chip.textContent = `팀 전체 (${ev.users.length}명)`;
+        usersEl.appendChild(chip);
+      } else {
+        ev.users.forEach(u => {
+          const m = userMeta[u];
+          if (!m) return;
+          const chip = document.createElement('span');
+          chip.className = 'detail-user';
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          dot.style.background = m.color;
+          chip.appendChild(dot);
+          chip.appendChild(document.createTextNode(m.name));
+          usersEl.appendChild(chip);
+        });
+      }
+
+      const memoEl = document.getElementById('detailMemo');
+      const memoText = ev.title && ev.title !== title ? `${ev.title}\n${ev.memo}` : (title === ev.memo ? '' : ev.memo);
+      memoEl.textContent = memoText;
+      memoEl.style.display = memoText ? '' : 'none';
+
+      popup.classList.remove('hidden');
+      const pw = 330, ph = popup.offsetHeight || 260;
+      let px = (x || window.innerWidth / 2) + 12;
+      let py = (y || window.innerHeight / 2) - 20;
+      if (px + pw > window.innerWidth - 12) px = window.innerWidth - pw - 12;
+      if (py + ph > window.innerHeight - 12) py = window.innerHeight - ph - 12;
+      if (px < 12) px = 12;
+      if (py < 12) py = 12;
+      popup.style.left = `${px}px`;
+      popup.style.top = `${py}px`;
+    }
+
+    function closeDetailPopup() {
+      document.getElementById('detailPopup').classList.add('hidden');
+      detailEventId = null;
+    }
+
+    function getDetailEvent() {
+      return events.find(ev => ev.id === detailEventId) || null;
+    }
+
+    function editDetailEvent() {
+      const ev = getDetailEvent();
+      closeDetailPopup();
+      if (ev) openModal(ev.startDate, ev);
+    }
+
+    async function deleteDetailEvent() {
+      const ev = getDetailEvent();
+      if (!ev) return;
+      if (!confirm(`'${eventDisplayTitle(ev)}' 일정을 삭제할까요?`)) return;
+      closeDetailPopup();
+      await apiDeleteEvent(ev.id);
+      events = events.filter(e => e.id !== ev.id);
+      try { localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events)); } catch (e) {}
+      renderCalendar();
+      renderSidebarUsers();
+    }
+
+    document.addEventListener('click', (e) => {
+      const popup = document.getElementById('detailPopup');
+      if (popup.classList.contains('hidden')) return;
+      if (e.target.closest('#detailPopup') || e.target.closest('.event-bar') || e.target.closest('.event-row')) return;
+      closeDetailPopup();
+    });
+
+    /* ================= Search ================= */
+    function onSearchInput() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(doSearch, 180);
+    }
+
+    function doSearch() {
+      const input = document.getElementById('searchInput');
+      const box = document.getElementById('searchResults');
+      const q = input.value.trim().toLowerCase();
+      if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+      const hits = events.filter(ev => {
+        const hay = `${ev.memo || ''} ${ev.title || ''} ${getTypeLabel(ev.type)} ${ev.users.map(u => userMeta[u]?.name || '').join(' ')}`.toLowerCase();
+        return hay.includes(q);
+      }).sort((a, b) => b.startDate.localeCompare(a.startDate) || (b.startTime || '').localeCompare(a.startTime || '')).slice(0, 25);
+
+      box.innerHTML = '';
+      if (!hits.length) {
+        const empty = document.createElement('div');
+        empty.className = 'search-empty';
+        empty.textContent = '검색 결과가 없습니다.';
+        box.appendChild(empty);
+      } else {
+        hits.forEach(ev => {
+          const item = document.createElement('div');
+          item.className = 'search-item';
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          dot.style.background = userMeta[ev.users[0]]?.color || typeMeta[ev.type]?.color || '#1a73e8';
+          const date = document.createElement('span');
+          date.className = 's-date';
+          date.textContent = formatDateLabel(ev.startDate);
+          const text = document.createElement('span');
+          text.className = 's-text';
+          text.textContent = eventDisplayTitle(ev);
+          item.appendChild(dot);
+          item.appendChild(date);
+          item.appendChild(text);
+          item.addEventListener('click', () => gotoEvent(ev.id));
+          box.appendChild(item);
+        });
+      }
+      box.classList.remove('hidden');
+    }
+
+    function gotoEvent(id) {
+      const ev = events.find(e => e.id === id);
+      document.getElementById('searchResults').classList.add('hidden');
+      if (!ev) return;
+      const [y, m] = ev.startDate.split('-').map(Number);
+      // 숨겨진 사용자의 일정이면 필터를 풀어 보이게 함
+      let unhidden = false;
+      ev.users.forEach(u => { if (hiddenUsers.has(u)) { hiddenUsers.delete(u); unhidden = true; } });
+      if (unhidden) { saveHiddenUsers(); renderSidebarUsers(); }
+      currentDate = new Date(y, m - 1, 1);
+      miniDate = new Date(currentDate);
+      closeDetailPopup();
+      renderCalendar();
+      renderMiniCal();
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-event-id="${id}"]`);
+        if (el) {
+          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          el.classList.add('flash');
+          setTimeout(() => el.classList.remove('flash'), 2000);
+        }
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', onSearchInput);
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.target.value = ''; doSearch(); e.target.blur(); }
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-box')) document.getElementById('searchResults').classList.add('hidden');
+    });
+
+    /* ================= User management ================= */
+    function openHelpModal() {
+      document.getElementById('helpModal').classList.add('active');
+    }
+    function closeHelpModal() {
+      document.getElementById('helpModal').classList.remove('active');
+    }
+
+    function openUserModal() {
+      renderManageList();
+      renderSwatches();
+      document.getElementById('newUserName').value = '';
+      document.getElementById('userModal').classList.add('active');
+      setTimeout(() => document.getElementById('newUserName').focus(), 50);
+    }
+    function closeUserModal() {
+      document.getElementById('userModal').classList.remove('active');
+    }
+
+    function renderManageList() {
+      const ul = document.getElementById('manageUserList');
+      ul.innerHTML = '';
+      userOrder.forEach(id => {
+        const meta = userMeta[id];
+        const count = events.filter(ev => ev.users.includes(id)).length;
+        const li = document.createElement('li');
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.style.background = meta.color;
+        const name = document.createElement('span');
+        name.textContent = meta.name;
+        const cnt = document.createElement('span');
+        cnt.className = 'ev-count';
+        cnt.textContent = `${count}개 일정`;
+        const del = document.createElement('button');
+        del.className = 'icon-btn';
+        del.title = '사용자 삭제';
+        del.textContent = '✕';
+        del.disabled = userOrder.length <= 1;
+        del.style.opacity = userOrder.length <= 1 ? 0.3 : 1;
+        del.addEventListener('click', () => deleteUser(id));
+        li.appendChild(dot);
+        li.appendChild(name);
+        li.appendChild(cnt);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+    }
+
+    function renderSwatches() {
+      const box = document.getElementById('colorSwatches');
+      box.innerHTML = '';
+      USER_PALETTE.forEach(c => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swatch' + (c === selectedNewColor ? ' selected' : '');
+        b.style.background = c;
+        b.title = c;
+        b.addEventListener('click', () => {
+          selectedNewColor = c;
+          box.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+          b.classList.add('selected');
+        });
+        box.appendChild(b);
+      });
+    }
+
+    async function addUser() {
+      const input = document.getElementById('newUserName');
+      const name = input.value.trim();
+      if (!name) { alert('이름을 입력하세요.'); input.focus(); return; }
+      if (userOrder.some(id => userMeta[id].name === name)) { alert('이미 있는 이름입니다.'); return; }
+      const usedColors = new Set(userOrder.map(id => userMeta[id].color));
+      let color = selectedNewColor;
+      if (usedColors.has(color)) {
+        color = USER_PALETTE.find(c => !usedColors.has(c)) || USER_PALETTE[userOrder.length % USER_PALETTE.length];
+      }
+      const id = 'u' + Date.now().toString(36);
+      userOrder.push(id);
+      userMeta[id] = { name, color };
+      selectedNewColor = USER_PALETTE[(USER_PALETTE.indexOf(color) + 1) % USER_PALETTE.length];
+      await saveUsers();
+      renderUserUI();
+      renderManageList();
+      renderSwatches();
+      input.value = '';
+      input.focus();
+      renderCalendar();
+    }
+
+    document.getElementById('newUserName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addUser();
+    });
+
+    async function deleteUser(id) {
+      const meta = userMeta[id];
+      if (!meta || userOrder.length <= 1) return;
+      const affected = events.filter(ev => ev.users.includes(id));
+      const solo = affected.filter(ev => ev.users.length === 1);
+      const shared = affected.length - solo.length;
+      const msg = `'${meta.name}' 사용자를 삭제할까요?\n\n• ${shared}개의 일정에서 제외됩니다.` +
+        (solo.length ? `\n• ${solo}개의 일정이 함께 삭제됩니다. (단독 일정)` : '') +
+        `\n\n이 작업은 되돌릴 수 없습니다.`;
+      if (!confirm(msg)) return;
+
+      const btn = document.getElementById('addUserBtn');
+      btn.disabled = true;
+      try {
+        for (const ev of affected) {
+          if (ev.users.length === 1) {
+            await apiDeleteEvent(ev.id);
+            events = events.filter(e => e.id !== ev.id);
+          } else {
+            const upd = { ...ev, users: ev.users.filter(u => u !== id) };
+            await apiUpdateEvent(ev.id, upd);
+            events = events.map(e => e.id === ev.id ? { ...e, users: upd.users } : e);
+          }
+          await sleep(350); // Worker 저장소 eventual consistency 대응
+        }
+        try { localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events)); } catch (e) {}
+        userOrder = userOrder.filter(x => x !== id);
+        delete userMeta[id];
+        hiddenUsers.delete(id);
+        saveHiddenUsers();
+        selectedUsers = selectedUsers.filter(u => u !== id);
+        await saveUsers();
+        renderUserUI();
+        renderManageList();
+        renderCalendar();
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ================= Event modal ================= */
+    function renderUserPicker() {
+      const c = document.getElementById('userPicker');
+      if (!c) return;
+      c.innerHTML = '';
+      userOrder.forEach(id => {
+        const meta = userMeta[id];
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'user-btn';
+        b.dataset.user = id;
+        b.textContent = meta.name;
+        b.style.setProperty('--uc', meta.color);
+        b.title = meta.name;
+        b.addEventListener('click', () => {
+          const idx = selectedUsers.indexOf(id);
+          if (idx >= 0) selectedUsers.splice(idx, 1);
+          else selectedUsers.push(id);
+          updateUserButtons();
+        });
+        c.appendChild(b);
+      });
+      selectedUsers = selectedUsers.filter(u => userMeta[u]);
+      updateUserButtons();
+    }
 
     function updateUserButtons() {
-      document.querySelectorAll('.user-btn').forEach(btn => btn.classList.toggle('active', selectedUsers.includes(btn.dataset.user)));
+      document.querySelectorAll('#userPicker .user-btn').forEach(btn => btn.classList.toggle('active', selectedUsers.includes(btn.dataset.user)));
     }
 
     function updateTypeButtons() {
@@ -783,6 +1582,7 @@
     }
 
     function openModal(date, event, rangePreset) {
+      closeDetailPopup();
       const modal = document.getElementById('eventModal');
       const startTimeInput = document.getElementById('startTime');
       const endTimeInput = document.getElementById('endTime');
@@ -793,9 +1593,10 @@
       const modalTitle = document.getElementById('modalTitle');
 
       editingEventId = event ? event.id : null;
-      selectedUsers = event ? [...event.users] : [];
+      selectedUsers = event ? event.users.filter(u => userMeta[u]) : [];
+      if (!event && userOrder.length === 1) selectedUsers = [...userOrder];
       selectedType = event?.type || 'general';
-      updateUserButtons();
+      renderUserPicker();
       updateTypeButtons();
 
       const startDate = rangePreset?.startDate || event?.startDate || date;
@@ -804,8 +1605,9 @@
       endDateInput.value = endDate;
       const isAllDay = event?.allDay || (!event?.startTime && !event?.endTime);
       allDayCheckbox.checked = isAllDay;
-      startTimeInput.value = event?.startTime || '09:00';
-      endTimeInput.value = event?.endTime || '10:00';
+      const defaultRange = getDefaultTimeRange();
+      startTimeInput.value = event?.startTime || defaultRange.startTime;
+      endTimeInput.value = event?.endTime || defaultRange.endTime;
       syncTimeSelectsFromValue('start');
       syncTimeSelectsFromValue('end');
       ['startPeriod', 'startHour', 'startMinute', 'endPeriod', 'endHour', 'endMinute'].forEach(id => {
@@ -861,22 +1663,23 @@
         const created = await apiCreateEvent(payload);
         events.push(normalizeEvents([created])[0]);
       }
-      // update local cache so page works offline / on GitHub Pages
       try {
         localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events));
       } catch (e) {}
       closeModal();
       renderCalendar();
+      renderSidebarUsers();
     }
 
     async function deleteCurrentEvent() {
       if (!editingEventId) return;
-
+      if (!confirm('이 일정을 삭제할까요?')) return;
       await apiDeleteEvent(editingEventId);
       events = events.filter(ev => ev.id !== editingEventId);
       try { localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events)); } catch (e) {}
       closeModal();
       renderCalendar();
+      renderSidebarUsers();
     }
 
     function finalizeDragSelection() {
@@ -887,6 +1690,7 @@
       openModal(startDate, null, { startDate, endDate });
     }
 
+    /* ================= Global event wiring ================= */
     document.getElementById('startTime').addEventListener('change', (e) => {
       const [h, m] = e.target.value.split(':').map(Number);
       if (Number.isNaN(h) || Number.isNaN(m)) return;
@@ -912,19 +1716,13 @@
       if (disabled) {
         document.getElementById('startTime').value = '09:00';
         document.getElementById('endTime').value = '10:00';
-        syncTimeSelectsFromValue('start');
-        syncTimeSelectsFromValue('end');
+      } else {
+        const defaultRange = getDefaultTimeRange();
+        document.getElementById('startTime').value = defaultRange.startTime;
+        document.getElementById('endTime').value = defaultRange.endTime;
       }
-    });
-
-    document.querySelectorAll('.user-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const user = btn.dataset.user;
-        const idx = selectedUsers.indexOf(user);
-        if (idx >= 0) selectedUsers.splice(idx, 1);
-        else selectedUsers.push(user);
-        updateUserButtons();
-      });
+      syncTimeSelectsFromValue('start');
+      syncTimeSelectsFromValue('end');
     });
 
     document.querySelectorAll('.type-btn').forEach(btn => {
@@ -936,6 +1734,7 @@
 
     document.getElementById('eventModal').addEventListener('click', (e) => { if (e.target.id === 'eventModal') closeModal(); });
     document.getElementById('helpModal').addEventListener('click', (e) => { if (e.target.id === 'helpModal') closeHelpModal(); });
+    document.getElementById('userModal').addEventListener('click', (e) => { if (e.target.id === 'userModal') closeUserModal(); });
 
     document.addEventListener('mousemove', (e) => {
       if (!dragEventState || !dragEventState.active) return;
@@ -986,6 +1785,7 @@
               events.push(normalizeEvents([created])[0]);
               try { localStorage.setItem('monthlyScheduleEvents', JSON.stringify(events)); } catch (err) {}
               renderCalendar();
+              renderSidebarUsers();
             }
           } else {
             events = events.map(ev => {
@@ -1007,8 +1807,12 @@
     document.addEventListener('keydown', (e) => {
       const modal = document.getElementById('eventModal');
       const helpModal = document.getElementById('helpModal');
+      const userModal = document.getElementById('userModal');
       if (e.key === 'Escape') {
+        if (!document.getElementById('detailPopup').classList.contains('hidden')) { closeDetailPopup(); return; }
+        if (!document.getElementById('searchResults').classList.contains('hidden')) { document.getElementById('searchResults').classList.add('hidden'); return; }
         if (helpModal.classList.contains('active')) closeHelpModal();
+        else if (userModal.classList.contains('active')) closeUserModal();
         else if (modal.classList.contains('active')) closeModal();
         return;
       }
@@ -1036,7 +1840,7 @@
     let wheelCooldown = false;
     document.getElementById('calendar').addEventListener('wheel', (e) => {
       const calendarEl = document.getElementById('calendar');
-      if (calendarEl.scrollHeight > calendarEl.clientHeight) return; // let a taller-than-viewport month scroll normally
+      if (calendarEl.scrollHeight > calendarEl.clientHeight) return;
       if (Math.abs(e.deltaY) < 15) return;
       e.preventDefault();
       if (wheelCooldown) return;
@@ -1045,8 +1849,16 @@
       setTimeout(() => { wheelCooldown = false; }, 450);
     }, { passive: false });
 
+    /* ================= Init ================= */
+    applyUsers(DEFAULT_USERS);
+    try {
+      const cached = JSON.parse(localStorage.getItem('monthlyScheduleEvents') || '[]');
+      events = normalizeEvents(cached);
+    } catch (e) { events = []; }
+    renderMiniCal();
     renderCalendar();
     loadEvents();
+    loadUsers();
   </script>
 </body>
 </html>
