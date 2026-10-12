@@ -306,6 +306,22 @@
     .manage-list .ev-count { margin-left: auto; font-size: 12.5px; color: var(--muted); }
     .manage-list .icon-btn { width: 32px; height: 32px; font-size: 15px; }
     .manage-list .icon-btn:hover { color: var(--danger); background: #fce8e6; }
+    .manage-list .edit-btn:hover { color: var(--gblue); background: #e8f0fe; }
+    .manage-list li.editing { gap: 8px; }
+    .rename-input {
+      flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 4px;
+      padding: 7px 10px; font-size: 14px;
+    }
+    .rename-color {
+      width: 32px; height: 32px; border: none; border-radius: 50%;
+      padding: 0; background: none; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-mini {
+      border-radius: 4px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+      border: 1px solid var(--line); background: #fff; flex-shrink: 0;
+    }
+    .btn-mini-primary { background: var(--gblue); color: #fff; border: none; }
+    .btn-mini-primary:hover { background: var(--gblue-dark); }
     .add-user-row { display: flex; gap: 8px; margin-bottom: 10px; }
     .add-user-row input { flex: 1; }
     .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 4px; }
@@ -559,6 +575,7 @@
     let currentDate = new Date();
     let miniDate = new Date();
     let userOrder = [];
+    let editingUserId = null;
     let userMeta = {};
     let hiddenUsers = new Set();
     try { hiddenUsers = new Set(JSON.parse(localStorage.getItem('monthlyScheduleHiddenUsers') || '[]')); } catch (e) {}
@@ -1422,6 +1439,7 @@
     }
 
     function openUserModal() {
+      editingUserId = null;
       renderManageList();
       renderSwatches();
       document.getElementById('newUserName').value = '';
@@ -1437,8 +1455,48 @@
       ul.innerHTML = '';
       userOrder.forEach(id => {
         const meta = userMeta[id];
-        const count = events.filter(ev => ev.users.includes(id)).length;
         const li = document.createElement('li');
+        if (editingUserId === id) {
+          li.className = 'editing';
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          dot.style.background = meta.color;
+          const input = document.createElement('input');
+          input.className = 'rename-input';
+          input.value = meta.name;
+          input.maxLength = 20;
+          const colorInput = document.createElement('input');
+          colorInput.type = 'color';
+          colorInput.className = 'rename-color';
+          colorInput.value = meta.color;
+          colorInput.title = '색상 변경';
+          colorInput.addEventListener('input', () => { dot.style.background = colorInput.value; });
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'btn-mini btn-mini-primary';
+          saveBtn.textContent = '저장';
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'btn-mini';
+          cancelBtn.textContent = '취소';
+          const doSave = () => saveRenameUser(id, input.value, colorInput.value);
+          const doCancel = () => { editingUserId = null; renderManageList(); };
+          saveBtn.addEventListener('click', doSave);
+          cancelBtn.addEventListener('click', doCancel);
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doSave();
+            else if (e.key === 'Escape') doCancel();
+          });
+          li.appendChild(dot);
+          li.appendChild(input);
+          li.appendChild(colorInput);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+          ul.appendChild(li);
+          setTimeout(() => { input.focus(); input.select(); }, 50);
+          return;
+        }
+        const count = events.filter(ev => ev.users.includes(id)).length;
         const dot = document.createElement('span');
         dot.className = 'dot';
         dot.style.background = meta.color;
@@ -1447,6 +1505,11 @@
         const cnt = document.createElement('span');
         cnt.className = 'ev-count';
         cnt.textContent = `${count}개 일정`;
+        const edit = document.createElement('button');
+        edit.className = 'icon-btn edit-btn';
+        edit.title = '이름/색상 변경';
+        edit.textContent = '✏️';
+        edit.addEventListener('click', () => { editingUserId = id; renderManageList(); });
         const del = document.createElement('button');
         del.className = 'icon-btn';
         del.title = '사용자 삭제';
@@ -1457,9 +1520,22 @@
         li.appendChild(dot);
         li.appendChild(name);
         li.appendChild(cnt);
+        li.appendChild(edit);
         li.appendChild(del);
         ul.appendChild(li);
       });
+    }
+
+    async function saveRenameUser(id, name, color) {
+      name = String(name).trim();
+      if (!name) { alert('이름을 입력하세요.'); return; }
+      if (userOrder.some(x => x !== id && userMeta[x].name === name)) { alert('이미 있는 이름입니다.'); return; }
+      userMeta[id] = { name, color: color || userMeta[id].color };
+      editingUserId = null;
+      await saveUsers();
+      renderUserUI();
+      renderManageList();
+      renderCalendar();
     }
 
     function renderSwatches() {
